@@ -196,12 +196,15 @@ type ReconcileIngress struct {
 func (r *ReconcileIngress) fetchNetworkingInfo(instance *extensionsv1beta1.Ingress) (*network.Network, error) {
 	// TODO: We probably want to add some way of specifying which worker nodes we want to use. (security group ingress rules etc...)
 	r.log.Info("fetching worker nodes")
+	
+	// using the stack name as the label with key name api
+	nodeLabelSelector := labels.SelectorFromSet(map[string]string{"api": instance.ObjectMeta.Name})
 	nodes := corev1.NodeList{
 		Items: []corev1.Node{},
 	}
 
 	if err := r.Client.List(context.TODO(), &nodes, &client.ListOptions{
-		LabelSelector: getNodeSelector(instance),
+		LabelSelector: nodeLabelSelector,
 	}); err != nil {
 		return nil, err
 	}
